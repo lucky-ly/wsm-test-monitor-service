@@ -26,8 +26,6 @@
             $table.html('');
             $overview.html('');
 
-            let usedCpuRecalculated = 0;
-            let usedRamRecalculated = 0;
             let threadsCount = 0;
 
             const usedRam = data.RamUsageBytes;
@@ -37,11 +35,7 @@
 
             for (let key in data.Processes) {
                 const process = data.Processes[key];
-
-                usedCpuRecalculated = usedCpuRecalculated + process.CpuUsage;
-                usedRamRecalculated = usedCpuRecalculated + process.RamUsageBytes;
                 threadsCount = threadsCount + process.ThreadsCount;
-
                 const ramMb = process.RamUsageBytes / 1024 / 1024;
                 const startTime = (new Date(process.StartTime)).toLocaleString();
 
@@ -57,8 +51,8 @@
             }
 
             $overview.append(`<p><b>Update time: </b>${updateTime}</p>`);
-            $overview.append(`<p><b>Cpu: </b>${Math.round(usedCpu).toFixed(2)}% / ${Math.round(usedCpuRecalculated * 100).toFixed(2)}%</p>`);
-            $overview.append(`<p><b>Ram: </b>${(usedRam / 1024 / 1024).toFixed(2)} Gb / ${(usedRamRecalculated / 1024 / 1024).toFixed(2)} Gb</p>`);
+            $overview.append(`<p><b>Cpu: </b>${Math.round(usedCpu).toFixed(2)}%</p>`);
+            $overview.append(`<p><b>Ram: </b>${(usedRam / 1024 / 1024).toFixed(2)} Gb</p>`);
             $overview.append(`<p><b>Processes: </b>${processCount}</p>`);
             $overview.append(`<p><b>Threads: </b>${threadsCount}</p>`);
         }
