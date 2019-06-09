@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace WebUi.Models
+namespace MonitorService.Entities
 {
-    public class ProcessInfo
+    public class ProcessInfoData
     {
         public string Name { get; set; }
         public int ProcessId { get; set; }

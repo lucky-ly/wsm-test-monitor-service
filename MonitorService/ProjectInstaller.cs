@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 namespace MonitorService
 {
     [RunInstaller(true)]
-    public partial class ProjectInstaller : System.Configuration.Install.Installer
+    public partial class ц : System.Configuration.Install.Installer
     {
-        public ProjectInstaller()
+        public ц()
         {
             InitializeComponent();
         }

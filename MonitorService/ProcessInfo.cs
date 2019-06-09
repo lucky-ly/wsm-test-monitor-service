@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using Core.Interfaces;
+using MonitorService.Interfaces;
 
 namespace MonitorService
 {
@@ -9,7 +9,6 @@ namespace MonitorService
     {
         private TimeSpan _lastTotalProcessorTime;
         private readonly bool _cpuTimeReadAllowed = true;
-        private readonly PerformanceCounter _cpuCounter;
 
         public ProcessInfo(DateTime startTime, TimeSpan lastTotalProcessorTime)
         {
@@ -17,10 +16,9 @@ namespace MonitorService
             _lastTotalProcessorTime = lastTotalProcessorTime;
         }
 
-        private ProcessInfo(DateTime startTime, PerformanceCounter perfCounter)
+        private ProcessInfo(DateTime startTime)
         {
             StartTime = startTime;
-            _cpuCounter = perfCounter;
             _cpuTimeReadAllowed = false;
         }
 
@@ -35,10 +33,8 @@ namespace MonitorService
         {
             ProcessInfo instance;
 
-
             try
             {
-                // !! some processes don't allow to get this
                 var lastTotalProcessorTime = process.TotalProcessorTime;
                 var startTime = process.StartTime;
 
@@ -51,14 +47,9 @@ namespace MonitorService
             }
             catch (Win32Exception)
             {
-                var name = ProcessUtils.GetInstanceNameForProcessId(process.Id);
-                var cpuCounter = new PerformanceCounter("Process", "% Processor Time", name, true);
-                logger.Warn($"Process {process.Id} doesn't allow accessing its info, trying to get it via counter");
-
                 var uptime = TimeSpan.FromMilliseconds(Environment.TickCount);
                 var startTime = DateTime.Now.Subtract(uptime);
-
-                instance = new ProcessInfo(startTime, cpuCounter);
+                instance = new ProcessInfo(startTime);
             }
 
             instance.Name = process.ProcessName;
@@ -72,16 +63,16 @@ namespace MonitorService
         {
             if (_cpuTimeReadAllowed)
             {
+                CpuUsage = process.GetCpuUsageFast(lastCheckTime, _lastTotalProcessorTime);
                 _lastTotalProcessorTime = process.TotalProcessorTime;
-                CpuUsage = ProcessUtils.GetCpuUsageFast(process, lastCheckTime, _lastTotalProcessorTime);
             }
             else
             {
-                CpuUsage = _cpuCounter.NextValue() / 100 / Environment.ProcessorCount;
+                CpuUsage = 0;
             }
 
             ThreadsCount = process.Threads.Count;
-            RamUsageBytes = process.WorkingSet64; // there are locked pages which aren't counted for some reason
+            RamUsageBytes = process.WorkingSet64;
         }
     }
 }

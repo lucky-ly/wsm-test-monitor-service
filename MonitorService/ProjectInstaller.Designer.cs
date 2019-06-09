@@ -1,6 +1,6 @@
 ﻿namespace MonitorService
 {
-    partial class ProjectInstaller
+    partial class ц
     {
         /// <summary>
         /// Required designer variable.
@@ -39,10 +39,12 @@
             // 
             // MonitorServiceInstaller
             // 
+            this.MonitorServiceInstaller.DelayedAutoStart = true;
             this.MonitorServiceInstaller.DisplayName = "MonitorService";
             this.MonitorServiceInstaller.ServiceName = "MonitorService";
+            this.MonitorServiceInstaller.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             // 
-            // ProjectInstaller
+            // ц
             // 
             this.Installers.AddRange(new System.Configuration.Install.Installer[] {
             this.MonitorServiceProcessInstaller,

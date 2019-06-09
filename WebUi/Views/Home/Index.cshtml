@@ -1,31 +1,120 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+﻿@using System.Configuration
+@{
+    ViewBag.Title = "Server Monitor";
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
+<script>
+    var App = function(serviceUrl) {
+        var self = this;
+        this.run = function() {
+            $('#disconnect-alert').addClass('hidden');
 
+            if (typeof (WebSocket) !== 'undefined') {
+                self.overviewSocket = new WebSocket(serviceUrl);
+            } else {
+                self.overviewSocket = new MozWebSocket(serviceUrl);
+            }
+
+            self.overviewSocket.onmessage = function (msg) {
+                const data = JSON.parse(msg.data);
+                self.updateView(data);
+            };
+
+            self.overviewSocket.onclose = function (event) {
+                $('#disconnect-alert').removeClass('hidden');
+            };
+        };
+
+        this.stop = function() {
+            window.clearInterval(self.timer);
+        }
+
+        this.requestProcesses = function() {
+            const url = serviceUrl;
+
+            $.getJSON(url, null, self.updateView);
+        }
+
+        this.updateView = function(data) {
+            const $table = $('#table');
+            const $overview = $('#overview');
+
+            $table.html('');
+            $overview.html('');
+
+            let usedCpuRecalculated = 0;
+            let usedRamRecalculated = 0;
+            let threadsCount = 0;
+
+            const usedRam = data.RamUsageBytes;
+            const usedCpu = data.CpuUsage * 100;
+            const processCount = data.Processes.length;
+            const updateTime = (new Date(data.UpdateTime)).toLocaleString();
+
+            for (let key in data.Processes) {
+                const process = data.Processes[key];
+
+                usedCpuRecalculated = usedCpuRecalculated + process.CpuUsage;
+                usedRamRecalculated = usedCpuRecalculated + process.RamUsageBytes;
+                threadsCount = threadsCount + process.ThreadsCount;
+
+                const ramMb = process.RamUsageBytes / 1024 / 1024;
+                const startTime = (new Date(process.StartTime)).toLocaleString();
+
+                const $element = $('<tr></tr>');
+                $element.append(`<td>${process.ProcessId}</td>`);
+                $element.append(`<td>${process.Name}</td>`);
+                $element.append(`<td>${Math.round(process.CpuUsage * 100)} %</td>`);
+                $element.append(`<td title="${process.RamUsageBytes} bytes">${ramMb.toFixed(2)} Mb</td>`);
+                $element.append(`<td>${process.ThreadsCount}</td>`);
+                $element.append(`<td>${startTime.toString()}</td>`);
+
+                $table.append($element);
+            }
+
+            $overview.append(`<p><b>Update time: </b>${updateTime}</p>`);
+            $overview.append(`<p><b>Cpu: </b>${Math.round(usedCpu).toFixed(2)}% / ${Math.round(usedCpuRecalculated * 100).toFixed(2)}%</p>`);
+            $overview.append(`<p><b>Ram: </b>${(usedRam / 1024 / 1024).toFixed(2)} Gb / ${(usedRamRecalculated / 1024 / 1024).toFixed(2)} Gb</p>`);
+            $overview.append(`<p><b>Processes: </b>${processCount}</p>`);
+            $overview.append(`<p><b>Threads: </b>${threadsCount}</p>`);
+        }
+    };
+
+    window.addEventListener('load', function() {
+        const url = '@ConfigurationManager.AppSettings.Get("WsUrl")';
+        
+        const app = new App(url);
+        document.getElementById('reconnect-link').addEventListener('click', function(e) {
+            app.run();
+            e.preventDefault();
+        });
+        app.run();
+    });
+</script>
 <div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
+    <div class="col-md-12">
+        <h2>Server monitor</h2>
+        
+        <div class="alert alert-danger hidden" id="disconnect-alert">Connection lost. Reload page to <a id="reconnect-link" href="/">reconnect</a>.</div>
+        
+        <div class="panel" id="overview">
+            <p>Connecting to service...</p>
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>pid</th>
+                <th>Name</th>
+                <th>Cpu Usage</th>
+                <th>Ram Usage (Mb)</th>
+                <th>Threads count</th>
+                <th>Start time</th>
+            </tr>
+            </thead>
+            <tbody id="table">
+
+            </tbody>
+        </table>
     </div>
 </div>

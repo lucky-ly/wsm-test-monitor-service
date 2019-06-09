@@ -1,4 +1,4 @@
-﻿namespace WebUi.Models
+﻿namespace MonitorService.Entities
 {
     public enum NotificationType
     {
