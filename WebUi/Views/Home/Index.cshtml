@@ -3,36 +3,20 @@
     ViewBag.Title = "Server Monitor";
 }
 
+@section scripts {
+<script type="text/javascript" src="~/Scripts/service-client.js"></script>
 <script>
     var App = function(serviceUrl) {
         var self = this;
+        this.serviceClient = new MonitorServiceClient(serviceUrl);
         this.run = function() {
             $('#disconnect-alert').addClass('hidden');
 
-            if (typeof (WebSocket) !== 'undefined') {
-                self.overviewSocket = new WebSocket(serviceUrl);
-            } else {
-                self.overviewSocket = new MozWebSocket(serviceUrl);
-            }
-
-            self.overviewSocket.onmessage = function (msg) {
-                const data = JSON.parse(msg.data);
-                self.updateView(data);
-            };
-
-            self.overviewSocket.onclose = function (event) {
-                $('#disconnect-alert').removeClass('hidden');
-            };
+            self.serviceClient.openConnection(self.updateView, self.disconnectHandler);
         };
 
-        this.stop = function() {
-            window.clearInterval(self.timer);
-        }
-
-        this.requestProcesses = function() {
-            const url = serviceUrl;
-
-            $.getJSON(url, null, self.updateView);
+        this.disconnectHandler = function(event) {
+            $('#disconnect-alert').removeClass('hidden');
         }
 
         this.updateView = function(data) {
@@ -80,17 +64,20 @@
         }
     };
 
-    window.addEventListener('load', function() {
+    $(function() {
         const url = '@ConfigurationManager.AppSettings.Get("WsUrl")';
         
         const app = new App(url);
-        document.getElementById('reconnect-link').addEventListener('click', function(e) {
+        $('#reconnect-link').click(function(e) {
             app.run();
             e.preventDefault();
         });
+
         app.run();
     });
 </script>
+}
+
 <div class="row">
     <div class="col-md-12">
         <h2>Server monitor</h2>
