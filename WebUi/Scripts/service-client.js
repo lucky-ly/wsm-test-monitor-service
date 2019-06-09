@@ -1,11 +1,20 @@
-﻿var MonitorServiceClient = function(serviceUrl) {
+﻿/**
+ * Create MonitorServiceClient instance
+ *
+ * @constructor 
+ * @this  {MonitorServiceClient}
+ * @param {string} serviceUrl - broadcaster url
+ */
+var MonitorServiceClient = function(serviceUrl) {
     const self = this;
     this.socket = null;
     this.serviceUrl = serviceUrl;
+    
     /**
-     * 
+     * Open connection and set callbacks
+     *
      * @param {function(data)} messageCallback
-     * @param {function()} disconnectCallback
+     * @param {function(event)} disconnectCallback
      */
     this.openConnection = function(messageCallback, disconnectCallback) {
         if (typeof (WebSocket) !== 'undefined') {
