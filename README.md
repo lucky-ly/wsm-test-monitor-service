@@ -10,11 +10,12 @@ Monitor service consists of 2 separate apps:
 Both apps can be configured by editing `appSettings` section of .config files.
 ### Supported options for `MonitorService`:
 
-- `WsUrl`: url which will be used to broadcast information via WebSockets. Must start with `http` or `https` protocol, and end with `/`
-- `CpuUsageNotificationPercent`: if CPU utilization percentage exceeds this limit, notification is sent to connected clients
-- `RamUsageNotificationPercent`: if RAM utilization percentage exceeds this limit, notification is sent to connected clients
-- `RamUsageNotificationBytes`: if more RAM bytes used, notification is sent to connected clients
-- `UpdateFrequency`: information gathering periodicity in milliseconds
+- `WsUrl`: url which will be used to broadcast information via WebSockets. Must start with `http` or `https` protocol, and end with `/`. No default value
+- `CpuUsageNotificationPercent`: if CPU utilization percentage exceeds this limit, notification is sent to connected clients. Default - `0`
+- `RamUsageNotificationPercent`: if RAM utilization percentage exceeds this limit, notification is sent to connected clients. Default - `0`
+- `RamUsageNotificationBytes`: if more RAM bytes used, notification is sent to connected clients. Default - `0`
+- `UpdateFrequency`: information gathering periodicity in milliseconds. Default - `4000`
+- `LogLevel`: available levels: `Disabled`, `Error`, `Warning`, `Info`. Default - `Info`
 
 **Note:** set notification limit to `0` to disable notifications
 

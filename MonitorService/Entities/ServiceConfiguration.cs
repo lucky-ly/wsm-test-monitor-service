@@ -1,4 +1,4 @@
-﻿namespace MonitorService
+﻿namespace MonitorService.Entities
 {
     public class ServiceConfiguration
     {
@@ -7,5 +7,6 @@
         public int RamUsageNotificationPercent { get; set; }
         public int RamUsageNotificationBytes { get; set; }
         public int UpdateFrequency { get; set; }
+        public LogLevelEnum LogLevel { get; set; }
     }
 }
